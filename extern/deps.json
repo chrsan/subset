@@ -1,0 +1,10 @@
+[
+  {
+    "repo": "https://github.com/harfbuzz/harfbuzz",
+    "branch": "8.3.1"
+  },
+  {
+    "repo": "https://github.com/Tehreer/SheenBidi",
+    "tag": "v2.7"
+  }
+]

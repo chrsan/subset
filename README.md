@@ -19,10 +19,14 @@ You need to download some third party dependencies.
 python3 ./tools/download_deps.py
 ```
 
-### Setup, build and install C/C++ archives
+### Setup and build the C/C++ archives
+
+You don't need to do this step when building the bindings below.
 
 ```shell
 meson setup build
+cd build
+meson compile -v
 ```
 
 ### Build and install the Python bindings

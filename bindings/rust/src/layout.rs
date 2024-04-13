@@ -1,18 +1,19 @@
 use std::borrow::Cow;
 use std::collections::VecDeque;
-use std::ffi::{c_uint, c_void};
+use std::ffi::{c_uint, c_void, CString};
 use std::ops::Range;
-use std::{iter, ptr, slice};
+use std::{iter, ptr};
 
 use crate::{
     ffi, find_best_font_match, Font, FontRun, FontStyle, Glyph, GlyphRun, Path, PathVerb, Syntesize,
 };
 
 #[derive(Debug, Default, Clone, Copy)]
-pub struct ShapeParams {
+pub struct ShapeParams<'a> {
     pub embolden_strength: Option<f32>,
     pub slant: Option<f32>,
     pub emit_path_commands: bool,
+    pub language: Option<&'a str>,
 }
 
 #[derive(Debug, Clone)]
@@ -76,7 +77,13 @@ impl<'a> Layout<'a> {
             } else {
                 Cow::Borrowed(font)
             };
-            let (glyphs, paths) = shape(&self.codepoints, &font, font_run, glyph_drawer.as_ref());
+            let (glyphs, paths) = shape(
+                &self.codepoints,
+                &font,
+                font_run,
+                params.language,
+                glyph_drawer.as_ref(),
+            );
             runs.push(GlyphRun {
                 font_run_index,
                 glyphs,
@@ -281,6 +288,7 @@ fn shape(
     codepoints: &[u32],
     font: &Font,
     run: &FontRun,
+    language: Option<&str>,
     glyph_drawer: Option<&GlyphDrawer>,
 ) -> (Vec<Glyph>, Vec<Path>) {
     struct Context {
@@ -292,40 +300,27 @@ fn shape(
     unsafe extern "C" fn path_command_callback(
         verb: c_uint,
         points: *const f32,
+        coordinate_count: usize,
         context: *mut c_void,
     ) {
         let path: &mut Path = &mut *(context as *mut Path);
-        let num_points = match verb {
-            0 => {
-                path.verbs.push(PathVerb::MoveTo);
-                1
-            }
-            1 => {
-                path.verbs.push(PathVerb::LineTo);
-                1
-            }
-            2 => {
-                path.verbs.push(PathVerb::QuadTo);
-                2
-            }
-            3 => {
-                path.verbs.push(PathVerb::CubicTo);
-                3
-            }
-            4 => {
-                path.verbs.push(PathVerb::Close);
-                0
-            }
+        path.verbs.push(match verb {
+            0 => PathVerb::MoveTo,
+            1 => PathVerb::LineTo,
+            2 => PathVerb::QuadTo,
+            3 => PathVerb::CubicTo,
+            4 => PathVerb::Close,
             _ => {
                 unreachable!();
             }
-        };
-        if num_points != 0 {
-            path.points.extend(
-                slice::from_raw_parts(points, num_points * 2)
-                    .chunks_exact(2)
-                    .map(|chunk| (chunk[0], chunk[1])),
-            );
+        });
+        let mut p = points;
+        for _ in (0..coordinate_count).step_by(2) {
+            let x = p.read();
+            p = p.add(1);
+            let y = p.read();
+            p = p.add(1);
+            path.points.push((x, y));
         }
     }
     unsafe extern "C" fn shape_callback(glyph: crate::Glyph, context: *mut c_void) {
@@ -355,8 +350,12 @@ fn shape(
         length: run.len,
         bidi_level: run.bidi_level,
         script: run.script,
-        language: ptr::null(), // TODO: Fix me!
+        language: ptr::null(),
     };
+    let language = language.map(CString::new).transpose().ok().flatten();
+    if let Some(ref lang) = language {
+        params.language = lang.as_ptr();
+    }
     let glyph_drawer = if let Some(drawer) = glyph_drawer {
         drawer.0
     } else {
@@ -371,7 +370,7 @@ fn shape(
     unsafe {
         ffi::subset_shape(
             font.0,
-            &mut params as *mut _,
+            &params as *const _,
             Some(shape_callback),
             &mut context as *mut _ as *mut _,
         );

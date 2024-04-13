@@ -42,8 +42,14 @@ pub type SubsetTextRunCallback =
 pub type SubsetShapeCallback =
     Option<unsafe extern "C" fn(glyph: crate::Glyph, context: *mut c_void)>;
 
-pub type SubsetPathCommandCallback =
-    Option<unsafe extern "C" fn(verb: c_uint, points: *const f32, context: *mut c_void)>;
+pub type SubsetPathCommandCallback = Option<
+    unsafe extern "C" fn(
+        verb: c_uint,
+        points: *const f32,
+        coordinate_count: usize,
+        context: *mut c_void,
+    ),
+>;
 
 extern "C" {
     pub fn subset_font_draw_glyph(
@@ -115,7 +121,7 @@ extern "C" {
 
     pub fn subset_shape(
         font: *mut SubsetFont,
-        params: *mut SubsetShapeParams,
+        params: *const SubsetShapeParams,
         callback: SubsetShapeCallback,
         context: *mut c_void,
     ) -> bool;

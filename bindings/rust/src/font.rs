@@ -107,6 +107,8 @@ impl Drop for Font {
     }
 }
 
+unsafe impl Send for Font {}
+
 pub fn find_best_font_match(
     fonts: &[Font],
     unicode_value: impl Into<UnicodeValue>,

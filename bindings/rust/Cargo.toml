@@ -6,3 +6,7 @@ edition = "2021"
 
 [dependencies]
 link-cplusplus = "1.0.9"
+
+[dev-dependencies]
+anyhow = "1.0.82"
+tiny-skia = "0.11.4"

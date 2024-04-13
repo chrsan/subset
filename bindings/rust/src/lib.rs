@@ -105,10 +105,73 @@ impl PathVerb {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
+pub enum PathCommand {
+    MoveTo((f32, f32)),
+    LineTo((f32, f32)),
+    QuadTo((f32, f32), (f32, f32)),
+    CubicTo((f32, f32), (f32, f32), (f32, f32)),
+    Close,
+}
+
 #[derive(Debug, Default, Clone)]
 pub struct Path {
     pub verbs: Vec<PathVerb>,
     pub points: Vec<(f32, f32)>,
+}
+
+impl Path {
+    pub fn iter(&self) -> PathIter<'_> {
+        PathIter {
+            path: self,
+            verb_index: 0,
+            point_index: 0,
+        }
+    }
+}
+#[derive(Debug)]
+pub struct PathIter<'a> {
+    path: &'a Path,
+    verb_index: usize,
+    point_index: usize,
+}
+
+impl<'a> Iterator for PathIter<'a> {
+    type Item = PathCommand;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let verb = self.path.verbs.get(self.verb_index)?;
+        self.verb_index += 1;
+        match verb {
+            PathVerb::MoveTo => {
+                let point = self.path.points.get(self.point_index)?;
+                self.point_index += 1;
+                Some(PathCommand::MoveTo(*point))
+            }
+            PathVerb::LineTo => {
+                let point = self.path.points.get(self.point_index)?;
+                self.point_index += 1;
+                Some(PathCommand::LineTo(*point))
+            }
+            PathVerb::QuadTo => {
+                let points = self
+                    .path
+                    .points
+                    .get(self.point_index..self.point_index + 2)?;
+                self.point_index += 2;
+                Some(PathCommand::QuadTo(points[0], points[1]))
+            }
+            PathVerb::CubicTo => {
+                let points = self
+                    .path
+                    .points
+                    .get(self.point_index..self.point_index + 3)?;
+                self.point_index += 3;
+                Some(PathCommand::CubicTo(points[0], points[1], points[3]))
+            }
+            PathVerb::Close => Some(PathCommand::Close),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Copy)]

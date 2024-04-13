@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <limits>
+#include <mutex>
 #include <vector>
 
 extern "C" {
@@ -161,6 +162,15 @@ void ScriptsForRun(const uint32_t* unichars, const SBRun& run,
       }
     }
   }
+}
+
+// N.B. `hb_language_get_default` isn't guaranteed to be thread safe
+// the first time it's called.
+hb_language_t DefaultLanguage() noexcept {
+  static hb_language_t kDefaultLanguage = HB_LANGUAGE_INVALID;
+  static std::once_flag flag;
+  std::call_once(flag, [&]() { kDefaultLanguage = hb_language_get_default(); });
+  return kDefaultLanguage;
 }
 }  // namespace
 
@@ -493,12 +503,12 @@ bool subset_shape(SubsetFont* font, const SubsetShapeParams* params,
                                    : HB_DIRECTION_LTR);
   hb_buffer_set_script(buf, static_cast<hb_script_t>(params->script));
   if (params->language == nullptr) {
-    hb_buffer_set_language(buf, hb_language_get_default());
+    hb_buffer_set_language(buf, DefaultLanguage());
   } else {
     const auto* lang = hb_language_from_string(params->language, -1);
     if (lang == HB_LANGUAGE_INVALID) {
       // TODO(chrsan): Should we return `false` here instead?
-      hb_buffer_set_language(buf, hb_language_get_default());
+      hb_buffer_set_language(buf, DefaultLanguage());
     } else {
       hb_buffer_set_language(buf, lang);
     }

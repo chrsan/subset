@@ -58,7 +58,9 @@ enum SubsetPathVerb {
 
 // NOLINTNEXTLINE
 typedef void (*SubsetPathCommandCallback)(enum SubsetPathVerb verb,
-                                          const float* points, void* context);
+                                          const float* points,
+                                          size_t coordinate_count,
+                                          void* context);
 
 void subset_font_draw_glyph(SubsetFont* font, uint32_t glyph_id,
                             SubsetGlyphDrawer* drawer,
@@ -116,7 +118,7 @@ struct SubsetGlyph {
 // NOLINTNEXTLINE
 typedef void (*SubsetShapeCallback)(struct SubsetGlyph glyph, void* context);
 
-bool subset_shape(SubsetFont* font, struct SubsetShapeParams* params,
+bool subset_shape(SubsetFont* font, const struct SubsetShapeParams* params,
                   SubsetShapeCallback callback, void* context);
 
 #ifdef __cplusplus

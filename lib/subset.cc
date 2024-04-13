@@ -59,7 +59,7 @@ void MoveTo(hb_draw_funcs_t* /* draw_funcs */, void* draw_data,
   auto& path_context = *static_cast<PathContext*>(draw_data);
   path_context.points[0] = to_x;
   path_context.points[1] = to_y;
-  path_context.callback(SUBSET_PATH_VERB_MOVE_TO, path_context.points.data(),
+  path_context.callback(SUBSET_PATH_VERB_MOVE_TO, path_context.points.data(), 2,
                         path_context.callback_context);
 }
 
@@ -69,7 +69,7 @@ void LineTo(hb_draw_funcs_t* /* draw_funcs */, void* draw_data,
   auto& path_context = *static_cast<PathContext*>(draw_data);
   path_context.points[0] = to_x;
   path_context.points[1] = to_y;
-  path_context.callback(SUBSET_PATH_VERB_LINE_TO, path_context.points.data(),
+  path_context.callback(SUBSET_PATH_VERB_LINE_TO, path_context.points.data(), 2,
                         path_context.callback_context);
 }
 
@@ -81,7 +81,7 @@ void QuadTo(hb_draw_funcs_t* /* draw_funcs */, void* draw_data,
   path_context.points[1] = control_y;
   path_context.points[2] = to_x;
   path_context.points[3] = to_y;
-  path_context.callback(SUBSET_PATH_VERB_QUAD_TO, path_context.points.data(),
+  path_context.callback(SUBSET_PATH_VERB_QUAD_TO, path_context.points.data(), 4,
                         path_context.callback_context);
 }
 
@@ -97,14 +97,14 @@ void CubicTo(hb_draw_funcs_t* /* draw_funcs */, void* draw_data,
   path_context.points[4] = to_x;
   path_context.points[5] = to_y;
   path_context.callback(SUBSET_PATH_VERB_CUBIC_TO, path_context.points.data(),
-                        path_context.callback_context);
+                        6, path_context.callback_context);
 }
 
 void ClosePath(hb_draw_funcs_t* /* draw_funcs */, void* draw_data,
                hb_draw_state_t* /* draw_state */,
                void* /* user_data */) noexcept {
   auto& path_context = *static_cast<PathContext*>(draw_data);
-  path_context.callback(SUBSET_PATH_VERB_CLOSE, nullptr,
+  path_context.callback(SUBSET_PATH_VERB_CLOSE, nullptr, 0,
                         path_context.callback_context);
 }
 
@@ -473,7 +473,7 @@ bool subset_find_best_font_match(uint32_t unichar, SubsetFontStyle font_style,
   return true;
 }
 
-bool subset_shape(SubsetFont* font, SubsetShapeParams* params,
+bool subset_shape(SubsetFont* font, const SubsetShapeParams* params,
                   SubsetShapeCallback callback, void* context) {
   if (font == nullptr || params == nullptr || callback == nullptr) {
     return false;

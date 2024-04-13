@@ -43,9 +43,11 @@ class Layout:
             ):
                 path = Path()
 
-                def path_command_callback(verb: int, points: list[float]):
+                def path_command_callback(
+                    verb: int, points: list[float], coordinate_count: int
+                ):
                     path.verbs.append(PathVerb(verb))
-                    for i in range(0, len(points), 2):
+                    for i in range(0, coordinate_count, 2):
                         path.points.append(Point(x=points[i], y=points[i + 1]))
 
                 if glyph_drawer is not None:
@@ -71,6 +73,27 @@ class Layout:
             )
             glyph_runs.append(GlyphRun(font_run=run, glyphs=glyphs))
         return glyph_runs
+
+
+def _split_run[
+    T
+](
+    run_offset: int,
+    run_length: int,
+    last_value: T,
+    callable: Callable[[int], T],
+) -> Generator[tuple[int, int, T], None, None]:
+    offset = run_offset
+    length = 0
+    for index in range(run_offset, run_offset + run_length):
+        new_value = callable(index)
+        if length != 0 and new_value != last_value:
+            yield offset, length, last_value
+            offset = index
+            length = 0
+        last_value = new_value
+        length += 1
+    yield offset, length, last_value
 
 
 class LayoutBuilder:
@@ -119,13 +142,13 @@ class LayoutBuilder:
                 font_style_run_offset,
                 font_style_run_length,
                 font_style,
-            ) in self._split_run(
+            ) in _split_run(
                 run_offset=text_run_offset,
                 run_length=text_run_length,
                 last_value=FontStyle(),
                 callable=lambda index: self.font_styles[self.font_style_indices[index]],
             ):
-                for offset, length, font_index in self._split_run(
+                for offset, length, font_index in _split_run(
                     run_offset=font_style_run_offset,
                     run_length=font_style_run_length,
                     last_value=0,
@@ -163,24 +186,3 @@ class LayoutBuilder:
         self.unichars.clear
         self.font_styles.clear()
         self.font_style_indices.clear()
-
-    def _split_run[
-        T
-    ](
-        self,
-        run_offset: int,
-        run_length: int,
-        last_value: T,
-        callable: Callable[[int], T],
-    ) -> Generator[tuple[int, int, T], None, None]:
-        offset = run_offset
-        length = 0
-        for index in range(run_offset, run_offset + run_length):
-            new_value = callable(index)
-            if length != 0 and new_value != last_value:
-                yield offset, length, last_value
-                offset = index
-                length = 0
-            last_value = new_value
-            length += 1
-        yield offset, length, last_value

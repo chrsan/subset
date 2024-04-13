@@ -27,6 +27,7 @@ cdef extern from "deps/lib/subset.h":
 
     ctypedef void (*SubsetPathCommandCallback)(SubsetPathVerb verb,
                                                const float* points,
+                                               size_t coordinate_count,
                                                void* context)
 
     ctypedef struct SubsetFont:
@@ -116,7 +117,7 @@ cdef extern from "deps/lib/subset.h":
     ctypedef void (*SubsetShapeCallback)(SubsetGlyph glyph, void* context)
 
     cdef bint subset_shape(SubsetFont* font,
-                           SubsetShapeParams* params,
+                           const SubsetShapeParams* params,
                            SubsetShapeCallback callback,
                            void* context)
 
@@ -136,18 +137,11 @@ cdef class GlyphDrawer:
             self._glyph_drawer = NULL
 
 
-cdef void _draw_glyph_callback(SubsetPathVerb verb, const float* points, void* context) noexcept:
+cdef void _draw_glyph_callback(SubsetPathVerb verb, const float* points, size_t coordinate_count, void* context) noexcept:
     cdef list pts = []
-    if verb != 4:
-        pts.append(points[0])
-        pts.append(points[1])
-    if verb == 2 or verb == 3:
-        pts.append(points[2])
-        pts.append(points[3])
-    if verb == 3:
-        pts.append(points[4])
-        pts.append(points[5])
-    (<object>context)(verb, pts)
+    for i in range(0, coordinate_count):
+        pts.append(points[i])
+    (<object>context)(verb, pts, coordinate_count)
     
 
 FontExtents = namedtuple("FontExtents", ["ascender", "descender", "line_gap"])
@@ -218,7 +212,7 @@ cdef class Font:
         font._font = synthesized_font
         return font
 
-    def draw_glyph(self, glyph_id: int, glyph_drawer: GlyphDrawer, callback: Callable[[int, list[float]], None]) -> None:
+    def draw_glyph(self, glyph_id: int, glyph_drawer: GlyphDrawer, callback: Callable[[int, list[float], int], None]) -> None:
         subset_font_draw_glyph(self._font, glyph_id, glyph_drawer._glyph_drawer, _draw_glyph_callback, <void*>callback)
 
     @classmethod

@@ -30,7 +30,7 @@ class Font:
         self,
         glyph_id: int,
         glyph_drawer: GlyphDrawer,
-        callback: Callable[[int, list[float]], None],
+        callback: Callable[[int, list[float], int], None],
     ) -> None: ...
     @classmethod
     def from_data(cls, data: bytes, index: int = 0) -> Font: ...

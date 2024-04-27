@@ -1,6 +1,9 @@
 harbuzz_public_cpp_args = ['-DHB_NO_FALLBACK_SHAPE', '-DHB_NO_WIN1256']
 harfbuzz_inc = include_directories('harfbuzz/src')
-harfbuzz_lib = static_library('harfbuzz', 'harfbuzz/src/harfbuzz.cc',
+harfbuzz_sources = files('harfbuzz/src/harfbuzz.cc')
+harfbuzz_lib = static_library(
+  'harfbuzz',
+  harfbuzz_sources,
   cpp_args: harbuzz_public_cpp_args + [
     '-std=c++11',
     '-fno-exceptions',
@@ -18,7 +21,10 @@ harfbuzz_dep = declare_dependency(
 
 sheenbidi_public_c_args = ['-DSB_CONFIG_UNITY']
 sheenbidi_inc = include_directories('SheenBidi/Headers')
-sheenbidi_lib = static_library('sheenbidi', 'SheenBidi/Source/SheenBidi.c',
+sheenbidi_sources = files('SheenBidi/Source/SheenBidi.c')
+sheenbidi_lib = static_library(
+  'sheenbidi',
+  sheenbidi_sources,
   c_args: sheenbidi_public_c_args,
   include_directories: sheenbidi_inc,
 )

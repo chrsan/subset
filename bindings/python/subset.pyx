@@ -14,11 +14,11 @@ cdef extern from "deps/lib/subset.h":
     ctypedef struct SubsetGlyphDrawer:
         pass
 
-    cdef SubsetGlyphDrawer* subset_glyph_drawer_create()
+    SubsetGlyphDrawer* subset_glyph_drawer_create()
 
-    cdef void subset_glyph_drawer_destroy(SubsetGlyphDrawer* drawer)
+    void subset_glyph_drawer_destroy(SubsetGlyphDrawer* drawer)
 
-    cdef enum SubsetPathVerb:
+    enum SubsetPathVerb:
         SUBSET_PATH_VERB_MOVE_TO = 0
         SUBSET_PATH_VERB_LINE_TO = 1
         SUBSET_PATH_VERB_QUAD_TO = 2
@@ -33,72 +33,72 @@ cdef extern from "deps/lib/subset.h":
     ctypedef struct SubsetFont:
         pass
 
-    cdef SubsetFont* subset_font_create_from_data(const char* data,
+    SubsetFont* subset_font_create_from_data(const char* data,
                                                   unsigned int length,
                                                   unsigned int index)
 
-    cdef SubsetFont* subset_font_create_from_file(const char* filename,
-                                                  unsigned int index)
+    SubsetFont* subset_font_create_from_file(const char* filename,
+                                             unsigned int index)
 
-    cdef bint subset_font_has_glyph(SubsetFont* font, uint32_t unichar)
+    bint subset_font_has_glyph(SubsetFont* font, uint32_t unichar)
 
-    cdef void subset_font_destroy(SubsetFont* font)
+    void subset_font_destroy(SubsetFont* font)
 
-    cdef bint subset_font_is_italic(SubsetFont* font)
+    bint subset_font_is_italic(SubsetFont* font)
 
-    cdef float subset_font_weight(SubsetFont* font)
+    float subset_font_weight(SubsetFont* font)
 
-    cdef float subset_font_width(SubsetFont* font)
+    float subset_font_width(SubsetFont* font)
 
-    cdef unsigned int subset_font_upem(SubsetFont* font)
+    unsigned int subset_font_upem(SubsetFont* font)
 
-    cdef bint subset_font_extents(SubsetFont* font,
-                                  bint horizontal,
-                                  int32_t* ascender,
-                                  int32_t* descender,
-                                  int32_t* line_gap)
+    bint subset_font_extents(SubsetFont* font,
+                             bint horizontal,
+                             int32_t* ascender,
+                             int32_t* descender,
+                             int32_t* line_gap)
 
-    cdef SubsetFont* subset_font_reference(SubsetFont* font)
+    SubsetFont* subset_font_reference(SubsetFont* font)
 
-    cdef SubsetFont* subset_font_synthesize(SubsetFont* font,
-                                            const float* embolden_strength,
-                                            const float* slant)
+    SubsetFont* subset_font_synthesize(SubsetFont* font,
+                                       const float* embolden_strength,
+                                       const float* slant)
 
-    cdef void subset_font_draw_glyph(SubsetFont* font,
-                                     uint32_t glyph_id,
-                                     SubsetGlyphDrawer* drawer,
-                                     SubsetPathCommandCallback callback,
-                                     void* context)
+    void subset_font_draw_glyph(SubsetFont* font,
+                                uint32_t glyph_id,
+                                SubsetGlyphDrawer* drawer,
+                                SubsetPathCommandCallback callback,
+                                void* context)
 
     ctypedef void (*SubsetTextRunCallback)(SubsetTextRun text_run,
                                            void* context)
-    cdef struct SubsetTextRun:
+    struct SubsetTextRun:
         size_t offset
         size_t length
         uint8_t bidi_level
         uint32_t script
 
-    cdef int subset_text_runs(const uint32_t* unichars,
-                              size_t unichar_count,
-                              uint8_t* paragraph_base_level,
-                              SubsetTextRunCallback callback,
-                              void* context);
+    int subset_text_runs(const uint32_t* unichars,
+                         size_t unichar_count,
+                         uint8_t* paragraph_base_level,
+                         SubsetTextRunCallback callback,
+                         void* context);
 
-    cdef struct SubsetFontStyle:
+    struct SubsetFontStyle:
         bint italic
         float weight;
         float width;
 
     ctypedef SubsetFont* (*SubsetFontProvider)(size_t index, void* context)
 
-    cdef bint subset_find_best_font_match(uint32_t unichar,
-                                          SubsetFontStyle font_style,
-                                          size_t font_count,
-                                          SubsetFontProvider font_provider,
-                                          void* font_provider_context,
-                                          size_t* best_index)
+    bint subset_find_best_font_match(uint32_t unichar,
+                                     SubsetFontStyle font_style,
+                                     size_t font_count,
+                                     SubsetFontProvider font_provider,
+                                     void* font_provider_context,
+                                     size_t* best_index)
 
-    cdef struct SubsetShapeParams:
+    struct SubsetShapeParams:
         const uint32_t* unichars
         size_t unichar_count
         size_t offset
@@ -107,7 +107,7 @@ cdef extern from "deps/lib/subset.h":
         uint32_t script
         const char* language
 
-    cdef struct SubsetGlyph:
+    struct SubsetGlyph:
         uint32_t glyph_id
         int32_t x_offset
         int32_t y_offset
@@ -116,16 +116,16 @@ cdef extern from "deps/lib/subset.h":
 
     ctypedef void (*SubsetShapeCallback)(SubsetGlyph glyph, void* context)
 
-    cdef bint subset_shape(SubsetFont* font,
-                           const SubsetShapeParams* params,
-                           SubsetShapeCallback callback,
-                           void* context)
+    bint subset_shape(SubsetFont* font,
+                      const SubsetShapeParams* params,
+                      SubsetShapeCallback callback,
+                      void* context)
 
 
 
 cdef class GlyphDrawer:
     cdef SubsetGlyphDrawer* _glyph_drawer;
-    
+
     def __cinit__(self) -> None:
         self._glyph_drawer = subset_glyph_drawer_create()
         if self._glyph_drawer is NULL:
@@ -142,7 +142,7 @@ cdef void _draw_glyph_callback(SubsetPathVerb verb, const float* points, size_t 
     for i in range(0, coordinate_count):
         pts.append(points[i])
     (<object>context)(verb, pts, coordinate_count)
-    
+
 
 FontExtents = namedtuple("FontExtents", ["ascender", "descender", "line_gap"])
 

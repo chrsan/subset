@@ -18,6 +18,8 @@ fn main() {
         cmd.arg("setup");
         cmd.arg("--buildtype");
         cmd.arg(build_type);
+        cmd.arg("--default-library");
+        cmd.arg("static");
         cmd.arg(&build_dir);
         assert!(cmd.status().unwrap().success());
     }
@@ -25,13 +27,14 @@ fn main() {
     cmd.current_dir(&build_dir);
     cmd.arg("compile");
     assert!(cmd.status().unwrap().success());
+    println!("cargo:rustc-link-search=native={}", build_dir.display());
     println!(
         "cargo:rustc-link-search=native={}",
-        build_dir.join("extern").display()
+        build_dir.join("subprojects/harfbuzz").display()
     );
     println!(
         "cargo:rustc-link-search=native={}",
-        build_dir.join("lib").display()
+        build_dir.join("subprojects/sheenbidi").display()
     );
     println!("cargo:rustc-link-lib=static=harfbuzz");
     println!("cargo:rustc-link-lib=static=sheenbidi");
@@ -40,9 +43,5 @@ fn main() {
         "cargo:rerun-if-changed={}",
         root_dir.join("meson.build").display()
     );
-    println!(
-        "cargo:rerun-if-changed={}",
-        root_dir.join("extern").display()
-    );
-    println!("cargo:rerun-if-changed={}", root_dir.join("lib").display());
+    println!("cargo:rerun-if-changed={}", root_dir.join("src").display());
 }

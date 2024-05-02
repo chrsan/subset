@@ -36,5 +36,15 @@ cd bindings/python
 pip install .
 ```
 
+### Build the Rust bindings
+
+You'll need [Meson][1] and [Ninja][2] to build the [Rust][3] bindings.
+
+```shell
+cd bindings/rust
+cargo run --example bidi
+```
+
 [1]: https://mesonbuild.com
 [2]: https://ninja-build.org
+[3]: https://www.rust-lang.org

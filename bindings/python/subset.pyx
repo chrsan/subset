@@ -10,7 +10,7 @@ from cpython.mem cimport PyMem_Malloc, PyMem_Free
 from libc.stddef cimport size_t
 from libc.stdint cimport int32_t, uint8_t, uint32_t
 
-cdef extern from "deps/lib/subset.h":
+cdef extern from "subset.h":
     ctypedef struct SubsetGlyphDrawer:
         pass
 

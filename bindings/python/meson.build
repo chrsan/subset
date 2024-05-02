@@ -1,25 +1,29 @@
 project('subset-python', 'c', 'cpp', 'cython')
 
-subdir('deps/extern')
-subdir('deps/lib')
+subset_proj = subproject(
+  'subset',
+  default_options: ['default_library=static'],
+)
+
+subset_dep = subset_proj.get_variable('subset_dep')
 
 py = import('python').find_installation(pure: false)
 
 py.extension_module(
-  'lib',
+  '_subset',
   'subset.pyx',
-  cython_args: ['--module-name', 'lib'],
-  dependencies: subset_lib_dep,
+  cython_args: ['--module-name', '_subset'],
+  dependencies: subset_dep,
   install: true,
   subdir: 'subset',
 )
 
 python_sources = files(
   '__init__.py',
+  '_subset.pyi',
+  '_types.py',
   'layout.py',
-  'lib.pyi',
   'py.typed',
-  'types.py',
 )
 
 py.install_sources(

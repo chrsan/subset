@@ -5,7 +5,7 @@ from collections.abc import Callable, Generator
 from dataclasses import dataclass, field
 
 from ._subset import GlyphDrawer, Font, ShapeContext, find_best_font_match, text_runs  # type: ignore
-from .types import FontRun, FontStyle, Glyph, GlyphRun, Path, PathVerb, Point
+from ._types import FontRun, FontStyle, Glyph, GlyphRun, Path, PathVerb, Point
 
 
 @dataclass(eq=False)

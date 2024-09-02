@@ -11,14 +11,6 @@ elsewhere.
 You'll need [Meson][1] and [Ninja][2] to be able to develop and build the C/C++ code.
 Use your preferred package manager to install them.
 
-### Third party dependencies
-
-You need to download some third party dependencies.
-
-```shell
-python3 ./tools/download_deps.py
-```
-
 ### Setup and build the C/C++ archives
 
 You don't need to do this step when building the bindings below.
@@ -27,6 +19,12 @@ You don't need to do this step when building the bindings below.
 meson setup build
 cd build
 meson compile -v
+```
+
+If you're on a macOS and get linker errors try using:
+
+```shell
+LDFLAGS="-ld_classic" meson setup build
 ```
 
 ### Build and install the Python bindings
